@@ -8,7 +8,9 @@ services:
       - ./prometheus:/etc/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
     restart: always
+  
   grafana:
     image: grafana/grafana
     ports:
@@ -16,6 +18,18 @@ services:
     depends_on:
       - prometheus
     restart: always
+
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - '9093:9093'
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    restart: always
+  
+  
   web_server:
     image: httpd:2.4
     ports:
