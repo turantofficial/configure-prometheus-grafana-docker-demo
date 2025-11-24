@@ -1,0 +1,50 @@
+groups:
+
+- name: basic-alerts
+  rules:
+
+  - alert: InstanceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "Target {{ $labels.instance }} is unreachable for 1 minute."
+
+  - alert: HighLatency
+    expr: histogram_quantile(0.90, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High Latency"
+      description: "90th percentile latency > 0.5s"
+
+  - alert: HTTPProbeFailed
+    expr: probe_success{job="blackbox_http"} == 0
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "HTTP Probe Failed for {{ $labels.instance }}"
+      description: "HTTP probe is failing for {{ $labels.instance }}"
+
+  - alert: PingFailed
+    expr: probe_success{job="blackbox_ping"} == 0
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "Ping Failed for {{ $labels.instance }}"
+      description: "ICMP Ping failed for {{ $labels.instance }}"
+
+  - alert: NodeHighCPU
+    expr: rate(node_cpu_seconds_total{mode!="idle"}[2m]) > 0.85
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU usage on {{ $labels.instance }}"
+      description: "CPU > 85% for more than 1 minute"
+
